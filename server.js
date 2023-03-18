@@ -1,7 +1,11 @@
 const fetch = (...args) => import('node-fetch').then(({ default: fetch }) => fetch(...args));
 
 const apiKey = 'AIzaSyD-noz4x6tsvd4mFgDl-rpP5jUsVZWrL18';
-const videoId = 'F35VYg3Bkbk';
+const videoId = 'v6y1Xt1v_zA';
+
+const express = require('express')
+const app = express()
+const port = 3000
 
 async function getLiveChatId(videoId, apiKey) {
   const url = `https://www.googleapis.com/youtube/v3/videos?part=liveStreamingDetails&id=${videoId}&key=${apiKey}`;
@@ -42,25 +46,37 @@ async function main() {
   const liveChatId = await getLiveChatId(videoId, apiKey);
   if (liveChatId) {
     const messages = await getChatMessages(liveChatId, apiKey);
-    const prompt = `Given these messages separated by ",", tell me the overall sentiment and context of the messages: ${messages.join(", ")}`;
-
+    const prompt = `Given these messages separated by "," tell me the overall sentiment of these messages and what you think the context is: [${messages.join(", ")}]`;
+  
     const cohere = require('cohere-ai');
     cohere.init('KAw4DX3e3XD8MIz0ypQCjs1vHxw7Pg2nELLRACeB');
 
     const response = await cohere.generate({
       model: 'command-xlarge-nightly',
       prompt: prompt,
-      max_tokens: 300,
-      temperature: 0.7,
+      max_tokens: 100,
+      temperature: 0.5,
     });
-
-    console.log(`Prediction: ${response.body.generations[0].text}`);
+    if(response.body.generations && response.body.generations.length > 0){
+      const prediction = response.body.generations[0].text;
+      app.get('/', (req, res) => {
+        res.sendFile(__dirname + '/index.html');
+      })
+      app.get('/prediction', (req, res) => {
+        res.send(prediction);
+      });
+    }
   }
 }
 
 function run() {
   main();
-  setTimeout(run, 5000);
+  setTimeout(run, 15000);
 }
+
+app.listen(port, () => {
+  console.log(`Listening on port ${port}`)
+})
+
 run();
 
