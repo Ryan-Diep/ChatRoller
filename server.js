@@ -1,7 +1,7 @@
-const fetch = (...args) => import('node-fetch').then(({default: fetch}) => fetch(...args));
+const fetch = (...args) => import('node-fetch').then(({ default: fetch }) => fetch(...args));
 
 const apiKey = 'AIzaSyD-noz4x6tsvd4mFgDl-rpP5jUsVZWrL18';
-const videoId = 'jfKfPfyJRdk';
+const videoId = 'F35VYg3Bkbk';
 
 async function getLiveChatId(videoId, apiKey) {
   const url = `https://www.googleapis.com/youtube/v3/videos?part=liveStreamingDetails&id=${videoId}&key=${apiKey}`;
@@ -46,4 +46,25 @@ async function main() {
   }
 }
 
-main();
+const cohere = require('cohere-ai');
+cohere.init('FtRSrth7mdEXJpeMcYUHd79NG1wObOWlLmrDC55m'); // This is your trial API key
+(async () => {
+  const response = await cohere.generate({
+    model: 'command-xlarge-nightly',
+    prompt: '{prompt}',
+    max_tokens: 300,
+    temperature: 0.9,
+    k: 0,
+    p: 0.75,
+    stop_sequences: [],
+    return_likelihoods: 'NONE'
+  });
+  console.log(`Prediction: ${response.body.generations[0].text}`);
+})();
+
+function run() {
+  main();
+  setTimeout(run, 5000);
+}
+run();
+
