@@ -42,25 +42,21 @@ async function main() {
   const liveChatId = await getLiveChatId(videoId, apiKey);
   if (liveChatId) {
     const messages = await getChatMessages(liveChatId, apiKey);
-    console.log(messages);
+    const prompt = `Given these messages separated by ",", tell me the overall sentiment and context of the messages: ${messages.join(", ")}`;
+
+    const cohere = require('cohere-ai');
+    cohere.init('KAw4DX3e3XD8MIz0ypQCjs1vHxw7Pg2nELLRACeB');
+
+    const response = await cohere.generate({
+      model: 'command-xlarge-nightly',
+      prompt: prompt,
+      max_tokens: 300,
+      temperature: 0.7,
+    });
+
+    console.log(`Prediction: ${response.body.generations[0].text}`);
   }
 }
-
-const cohere = require('cohere-ai');
-cohere.init('FtRSrth7mdEXJpeMcYUHd79NG1wObOWlLmrDC55m'); // This is your trial API key
-(async () => {
-  const response = await cohere.generate({
-    model: 'command-xlarge-nightly',
-    prompt: '{prompt}',
-    max_tokens: 300,
-    temperature: 0.9,
-    k: 0,
-    p: 0.75,
-    stop_sequences: [],
-    return_likelihoods: 'NONE'
-  });
-  console.log(`Prediction: ${response.body.generations[0].text}`);
-})();
 
 function run() {
   main();
