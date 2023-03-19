@@ -1,53 +1,55 @@
 <!DOCTYPE html>
 <html>
 
-    <head>
-        <meta charset="UTF-8">
-        <title>ChatRoller</title>
-        <link rel="stylesheet" href="index.css">
-    </head>
+<head>
+    <meta charset="UTF-8">
+    <title>ChatRoller</title>
+    <link rel="stylesheet" href="index.css">
+</head>
 
-    <body>
-        <header>
-            <div id = "title">
-                <h1>This is ChatRoller</h1>
-                <div id = "sub-title">
-                    <label>YouTube Link: </label>
-                    <input type="text" id="link">
-                    <button type="button" id = "submit-button">Enter</button>            
-                </div>
-            <br>
+<body>
+    <header>
+        <div id="title">
+            <h1>ChatRoller</h1>
+            <div id="sub-title">
+                <label>YouTube Link: </label>
+                <input type="text" id="link">
+                <button type="button" id="submit-button">Enter</button>
             </div>
-        </header>
-        
-        <p>These are the responses below</p>
-        <div id="scroll-box">
-            <div id="message"></div>
+            <br>
         </div>
-        <script>
-                let previousPrediction = '';
-    
-                function displayPrediction(prediction) {
-                if (prediction !== previousPrediction) {
-                    const messageDiv = document.getElementById('message');
-                    const predictionNode = document.createTextNode(prediction);
-                    const brNode = document.createElement('br');
-                    messageDiv.appendChild(predictionNode);
-                    messageDiv.appendChild(brNode);
-                    previousPrediction = prediction;
-                }
-                }
-    
-                setInterval(() => {
-                fetch('/prediction')
-                    .then(response => response.text())
-                    .then(prediction => {
+    </header>
+
+    <p>Sentiment Analysis:</p>
+    <div id="scroll-box">
+        <div id="message"></div>
+    </div>
+    <script>
+        let previousPrediction = '';
+
+        function displayPrediction(prediction) {
+            if (prediction !== previousPrediction) {
+                const messageDiv = document.getElementById('message');
+                const predictionNode = document.createTextNode(prediction);
+                const brNode = document.createElement('br');
+                const brNode1 = document.createElement('br');
+                messageDiv.appendChild(predictionNode);
+                messageDiv.appendChild(brNode);
+                messageDiv.appendChild(brNode1);
+                previousPrediction = prediction;
+            }
+        }
+
+        setInterval(() => {
+            fetch('/prediction')
+                .then(response => response.text())
+                .then(prediction => {
                     displayPrediction(prediction);
-                    })
-                    .catch(error => console.error(error));
-                }, 15000);
-            </script>
-        </div>
-    </body>
+                })
+                .catch(error => console.error(error));
+        }, 15000);
+    </script>
+    </div>
+</body>
 
 </html>
