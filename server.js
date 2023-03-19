@@ -1,11 +1,11 @@
 const fetch = (...args) => import('node-fetch').then(({ default: fetch }) => fetch(...args));
 
 const apiKey = 'AIzaSyD-noz4x6tsvd4mFgDl-rpP5jUsVZWrL18';
-const videoId = 'v6y1Xt1v_zA';
+const videoId = 'F35VYg3Bkbk';
 
 const express = require('express')
 const app = express()
-const port = 3000
+const port = process.env.port || 3000
 
 async function getLiveChatId(videoId, apiKey) {
   const url = `https://www.googleapis.com/youtube/v3/videos?part=liveStreamingDetails&id=${videoId}&key=${apiKey}`;
@@ -27,7 +27,7 @@ async function getLiveChatId(videoId, apiKey) {
 }
 
 async function getChatMessages(liveChatId, apiKey) {
-  const url = `https://www.googleapis.com/youtube/v3/liveChat/messages?part=snippet,authorDetails&liveChatId=${liveChatId}&maxResults=2000&key=${apiKey}`;
+  const url = `https://www.googleapis.com/youtube/v3/liveChat/messages?part=snippet,authorDetails&liveChatId=${liveChatId}&maxResults=1000&key=${apiKey}`;
 
   try {
     const response = await fetch(url);
@@ -42,7 +42,7 @@ async function getChatMessages(liveChatId, apiKey) {
   }
 }
 
-async function main() {
+async function generatePrediction() {
   const liveChatId = await getLiveChatId(videoId, apiKey);
   if (liveChatId) {
     const messages = await getChatMessages(liveChatId, apiKey);
@@ -59,18 +59,28 @@ async function main() {
     });
     if(response.body.generations && response.body.generations.length > 0){
       const prediction = response.body.generations[0].text;
-      app.get('/', (req, res) => {
-        res.sendFile(__dirname + '/index.html');
-      })
-      app.get('/prediction', (req, res) => {
-        res.send(prediction);
-      });
+      console.log(prediction);
+      return prediction;
     }
   }
+  return null; // return null if there's an error or no messages found
 }
 
+app.get('/', (req, res) => {
+  res.sendFile(__dirname + '/index.html');
+})
+
+// endpoint to continuously return the messages with the latest prediction
+app.get('/prediction', async (req, res) => {
+  const messagesWithPrediction = await generatePrediction();
+  if (messagesWithPrediction) {
+    res.send(messagesWithPrediction);
+  } else {
+    res.send("Unable to generate prediction");
+  }
+});
+
 function run() {
-  main();
   setTimeout(run, 15000);
 }
 
@@ -79,4 +89,3 @@ app.listen(port, () => {
 })
 
 run();
-
